@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>学生列表</title>
+    <script src="/static/jquery-1.2.3.js"></script>
+</head>
+<style>
+    .hide{
+        display:none;
+    }
+    .shadow{
+        position:fixed;
+        left:0;
+        top:0;
+        right:0;
+        bottom:0;
+        background-color:black;
+        opacity:0.4;
+        z-index:999;
+    }
+    .modal{
+        position:fixed;
+        left:50%;
+        top:50%
+        height:300px;
+        width:400px;
+        background-color:white;
+        margin-left:-200px;
+        margin-top:0px;
+        z-index:1000;
+    }
+</style>
+<body>
+    <h1>班级列表</h1>
+    <div>
+        <a href="/add_class">添加</a>
+        <a onclick="showModal();">添加对话框</a>
+        <a href="/welcome">返回</a>
+    </div>
+    <table border="1">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>班级名称</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in class_list %}
+        <tr>
+            <td>{{row.id}}</td>
+            <td>{{row.title}}</td>
+            <td><a href="/del_class/?nid={{row.id}}">删除</a>
+                <a onclick="showModal1({{row.id}});" >删除对话框</a>
+                <a id="nid" class="hide">{{row.id}}</a>
+                |
+                <a href="/edit_class/?nid={{row.id}}">编辑</a>
+                <a onclick="showModal2(this,'{{row.title}}',{{row.id}});" >编辑对话框</a>
+<!--                <a id="nid1" class="hide">{{row.id}}</a>-->
+<!--                <a id="title1" class="hide">{{row.title}}</a>-->
+            </td>
+        </tr>
+        {%endfor%}
+        </tbody>
+    </table>
+    <div id="shadow" class="shadow hide"></div>
+    <div id="modal" class="modal hide">
+
+        <p>
+            <input id="title" type="text" name="title">
+        </p>
+        <input type="button" value="提交" onclick="AjaxSend();">
+        <span id="errormsg"></span>
+        <input type="submit" value="取消" onclick="cancelmodal();">
+    </div>
+    <div id="shadow1" class="shadow hide"></div>
+    <div id="modal1" class="modal hide">
+        <input id="delclick"  type="button" value="确认" >
+        <input type="submit" value="取消" onclick="cancelmodal1();">
+    </div>
+    <div id="shadow2" class="shadow hide"></div>
+    <div id="modal2" class="modal hide">
+        <h3>编辑框</h3>
+        <p>
+            <input id="title2" type="text" name="title"></p>
+        </p>
+<!--        <input id="click" type="button" value="提交" onclick="AjaxEdit();">-->
+        <input id="click" type="submit" value="提交" >
+        <span id="errormsg1"></span>
+        <input type="submit" value="取消" onclick="cancelmodal2();">
+    </div>
+
+    <script src="/static/jquery-1.2.3.js"></script>
+    <script>
+        function showModal(){
+            document.getElementById('shadow').classList.remove('hide')
+            document.getElementById('modal').classList.remove('hide')
+
+        }
+        function showModal1(c){
+            document.getElementById('shadow1').classList.remove('hide')
+            document.getElementById('modal1').classList.remove('hide')
+            document.getElementById('delclick').onclick=function(){
+            Ajaxdel(c)}
+
+        }
+        function showModal2(ths,t,c){
+            document.getElementById('shadow2').classList.remove('hide')
+            document.getElementById('modal2').classList.remove('hide')
+            var v=$(ths).parent().prevAll();
+            console.log($(v[0]).text())
+
+
+
+            document.getElementById('title2').value=t
+            document.getElementById('click').onclick=function(){
+            AjaxEdit(c)}
+
+        }
+        function cancelmodal(){
+            document.getElementById('shadow').classList.add('hide')
+            document.getElementById('modal').classList.add('hide')
+        }
+        function cancelmodal1(){
+            document.getElementById('shadow1').classList.add('hide')
+            document.getElementById('modal1').classList.add('hide')
+        }
+        function cancelmodal2(){
+            document.getElementById('shadow2').classList.add('hide')
+            document.getElementById('modal2').classList.add('hide')
+        }
+        function AjaxSend(){
+            $.ajax({
+                url:'/modal_add_class/',
+                type:'POST',
+                data:{'title':$('#title').val()},
+                success:function(data){
+                    //当服务端处理完成后，返回数据时，该函数自动调用
+                    //data=服务端返回的值
+                    console.log(data);
+                    if (data=='ok'){
+                        location.href="/classes/";
+                    }else{
+                        $('#errormsg').text(data);
+                    }
+
+                }
+            })
+        }
+        function Ajaxdel(n){
+            $.ajax({
+                url:'/modal_del_class/',
+                type:'POST',
+                data:{'nid':n},
+                success:function(data){
+                    //当服务端处理完成后，返回数据时，该函数自动调用
+                    //data=服务端返回的值
+                    console.log(data);
+                    if (data=='ok'){
+                        location.href="/classes/";
+<!--                    }else{-->
+<!--                        $('#errormsg').text(data);-->
+                    }
+
+                }
+            })
+        }
+        function AjaxEdit(n){
+            $.ajax({
+                url:"/modal_edit_class/",
+                type:'POST',
+                data:{'title':$('#title2').val(),'nid':n},
+                success:function(data){
+                    //当服务端处理完成后，返回数据时，该函数自动调用
+                    //data=服务端返回的值
+                    console.log(data);
+                    if (data=='ok'){
+                        location.href="/classes/";
+                    }else{
+                        $('#errormsg1').text(data);
+                    }
+
+                }
+            })
+        }
+    </script>
+</body>
+</html>

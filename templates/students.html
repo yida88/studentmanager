@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student</title>
+    <script src="/static/jquery-1.2.3.js"></script>
+</head>
+<style>
+    .hide{
+        display:none;
+    }
+    .shadow{
+        position:fixed;
+        left:0;
+        top:0;
+        right:0;
+        bottom:0;
+        background-color:black;
+        opacity:0.4;
+        z-index:999;
+    }
+    .modal{
+        position:fixed;
+        left:50%;
+        top:50%
+        height:300px;
+        width:400px;
+        background-color:white;
+        margin-left:-200px;
+        margin-top:0px;
+        z-index:1000;
+    }
+</style>
+<body>
+<h1>学生列表</h1>
+<a href="/add_student">添加</a>
+<a id="addModal">添加对话框</a>
+<a href="/welcome">返回</a>
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>姓名</th>
+        <th>班级</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+
+    {% for row in students_list %}
+    <tr>
+        <td>{{row.id}}</td>
+        <td>{{row.name}}</td>
+        <td clsid="{{row.class_id}}">{{row.title}}</td>
+        <td>
+            <a class="flag" href="/del_student/?nid={{row.id}}">删除</a>
+            |
+            <a class="delModal">删除对话框</a>
+            |
+            <a href="/edit_student/?nid={{row.id}}">编辑</a>
+            |
+            <a class="editModal">编辑对话框</a>
+        </td>
+
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div id="shadow" class="shadow hide"></div>
+<div id="modal" class="modal hide">
+     <p>学生姓名：
+         <input id="addName" type="text" name="name">
+     </p>
+    <p>
+        班级名称：
+        <select id="addClassId"  name="class_id">
+            {% for row in class_list %}
+            <option value="{{row.id}}">{{row.title}}</option>
+            {% endfor %}
+        </select>
+    </p>
+<input id="btnAdd" type="submit" value="提交">
+
+    <span id="errormessage"></span>
+    <input id="cancelmodal" type="submit" value="取消">
+</div>
+<div id="modal1" class="modal hide">
+    <input id="student_id" type="text" name="studentid" style="display:none">
+    <input id="btnDel" type="submit" value="确认">
+    <input id="cancelmodal1" type="submit" value="取消">
+
+</div>
+<div id="modal2" class="modal hide">
+     <p>学生姓名：
+         <input id="editName" type="text" name="name">
+     </p>
+    <input id="studentid" type="text" style="display:none">
+    <p>
+        班级名称：
+       <select id="classid"  name="class_id">
+            {% for row in class_list %}
+                {% if row.id == student_list.class_id %}
+                    <option selected value="{{row.id}}">{{row.title}}</option>
+                {% else %}
+                    <option value="{{row.id}}">{{row.title}}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </p>
+<input id="btnEdit" type="submit" value="提交">
+    <input id="cancelmodal2" type="submit" value="取消">
+    <span id="errormessage1"></span>
+</div>
+<!--    <span id="errormessage1"></span>-->
+<!--    <input id="cancelmodal2" type="submit" value="取消">-->
+<script>
+   $(function(){
+        $('#addModal').click(function(){
+
+            $('#shadow').removeClass('hide')
+            $('#modal').removeClass('hide')
+        })
+        $('#cancelmodal').click(function(){
+            $('#shadow').addClass('hide')
+            $('#modal').addClass('hide')
+        })
+        $('.delModal').click(function(){
+            $('#shadow').removeClass('hide')
+            $('#modal1').removeClass('hide')
+            var row=$(this).parent().prevAll()
+            console.log(row)
+            $('#student_id').val($((row[2])).text())
+        })
+        $('#cancelmodal1').click(function(){
+            $('#shadow').addClass('hide')
+            $('#modal1').addClass('hide')
+        })
+        $('.editModal').click(function(){
+            $('#shadow').removeClass('hide')
+            $('#modal2').removeClass('hide')
+            var row=$(this).parent().prevAll()
+
+            studentname=$(row[1]).text()
+            studentid=$(row[2]).text()
+            classid=$(row[0]).attr('clsid')
+
+            console.log(studentname,studentid,classid)
+            $('#editName').val(studentname)
+            $('#studentid').val(studentid)
+            $('#classid').val(classid)
+
+        })
+        $('#cancelmodal2').click(function(){
+            $('#shadow').addClass('hide')
+            $('#modal2').addClass('hide')
+        })
+        $('#btnAdd').click(function(){
+            console.log($('#addClassId').val())
+            $.ajax({
+            url:'/modal_add_student/',
+            type:'POST',
+            data:{'name':$('#addName').val(),'class_id':$('#addClassId').val()},
+            success:function(arg){
+                rg=JSON.parse(arg);
+                console.log(rg)
+                if (rg.statues){
+                    location.href='/students/'
+                }else{
+                    $("#errormessage").text(rg.message)
+                }
+
+                }
+
+            })
+        })
+        $('#btnDel').click(function(){
+            $.ajax({
+            url:'/modal_del_student/',
+            type:'POST',
+            data:{'student_id':$('#student_id').val()},
+            success:function(arg){
+                rg=JSON.parse(arg);
+                if (rg.status){
+                    location.reload();
+                }else{
+                    $("#errormessage").text(rg.message);
+                }
+
+                }
+
+            })
+        })
+        $('#btnEdit').click(function(){
+            console.log($('#studentid').val(),$('#editName').val(),$('#classid').val())
+            $.ajax({
+            url:'/modal_edit_student/',
+            type:'POST',
+            data:{'student_id':$('#studentid').val(),'student_name':$('#editName').val(),'class_id':$('#classid').val()},
+            success:function(arg){
+                rg=JSON.parse(arg);
+                console.log(rg)
+                if (rg.status){
+                    location.reload();
+                }else{
+                    $("#errormessage1").text(rg.message);
+                }
+
+                }
+
+            })
+        })
+   })
+
+</script>
+</body>
+</html>

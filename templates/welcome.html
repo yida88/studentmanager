@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="/static/jquery-1.2.3.js"></script>
+</head>
+<body>
+<h1>欢迎登录学员管理系统</h1>
+<input id="classbtn" type="button" value="班级管理"  >
+<input id="studentbtn" type="button" value="学生管理">
+<input id="teacherbtn" type="button" value="老师管理">
+<script>
+    $(function(){
+        $('#classbtn').click(function(){
+            location.href="/classes/";
+        })
+        $('#studentbtn').click(function(){
+            location.href="/students/";
+        })
+         $('#teacherbtn').click(function(){
+            location.href="/teachers/";
+        })
+    })
+</script>
+</body>
+</html>
